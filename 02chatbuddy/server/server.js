@@ -1,28 +1,17 @@
-
 const express = require('express');
 const app = express();
 const port = 3000;
 
-//Define a route for the root path
-app.get('/', (req, res) => {
-    res.json({ message:'Hello World!' });
-});
+app.use(express.json());
 
-app.get('/chatbot', (req, res) => {
-    res.send('Welcome to the Chatbot API!');
-});
+app.post('/chat', (req, res) => {
+    const userMessage = req.body.message;
+    console.log(`Received Message: ${userMessage}`);
 
-app.get('/users/:userId/:userName', (req, res) => {
-    const userId = req.params.userId;
-    const userName = req.params.userName;
-    res.send(`User ID: ${userId}`);
-});
-
-app.get('/about', (req, res) => {
-    res.send('This is a simple chatbot API built with Express!')
+    const chatbotResponse = `You said ${userMessage}.I'm a simple chatbot`;
+    res.json({ response: chatbotResponse });
 })
 
-//Star the server
-app.listen(port, () =>{
-    console.log(`Server listening on port ${port} `);
-});
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`);
+})
