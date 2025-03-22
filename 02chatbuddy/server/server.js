@@ -1,24 +1,30 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const chatRoutes = require('./routes/chat'); 
+
+dotenv.config(); 
+
 const app = express();
 const port = 3000;
 
+
 app.use(express.json());
 
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((err) => console.error('❌ Could not connect to MongoDB', err));
+
+
+app.use('/chat', chatRoutes);
+
+
 app.get('/hello', (req, res) => {
-    res.send("Hello World!")
-}) 
-
-
-app.post('/chat', (req, res) => {
-    const userMessage = req.body.user_message;
-    console.log(`Received Message: ${userMessage}`);
-
-    const chatbotResponse = `You said ${userMessage}.Hello my friend, I am the chatBuddy`;
-    res.json({ response: chatbotResponse });
-})
-
+  res.send('Hello, I am ChatAi!');
+});
 
 
 app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-})
+  console.log(`The server is listening on port ${port}`);
+});
