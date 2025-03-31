@@ -41,9 +41,45 @@ async function getChatbotResponse(userInput) {
 }
 
 
+
+// Rate Limits
+const delay = (ms) => new  Promise((res) => setTimeout(res, ms));
+
+
+async function getChatbotResponseWithRetry(userInput, retries = 3) {
+  try{
+    return await getChatbotResponse(userInput);
+  } catch (error) {
+   if (error.response && error.response.status === 429 && retries > 0) {
+    //Rate Limits exceeded
+    const retryAfter = error.response.headers['retry-after'] || 1;  // Get retry-after header or default to 1 second
+    console.warn(`Rate limit exceeded. Retrying in ${retryAfter} seconds... (Retries left: ${retries})`);
+    await delay (retryAfter * 1000); // Wait before retrying
+    return getChatbotResponseWithRetry(userInput, retries - 1); //Retry
+   } else {
+    // Other error or no more retries
+    throw error; // Re-throw the error to be handled by the main function
+   }
+  }
+}
+
+
+
 async function main() {
+try {
   const userMessage = "What are your hours of operation?";
   const ChatbotResponse = await getChatbotResponse(userMessage);
   console.log("User:", userMessage);
-  console.log("Chatbot:", getChatbotResponse);
+  console.log("Chatbot:", chatbotResponse);
+} catch (error) {
+  console.error("Final error:", error);
+  // Handle the error appropriately, e.g., display a generic error message to the user
 }
+}
+
+
+
+
+
+
+
