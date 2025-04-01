@@ -1,5 +1,5 @@
 require('dotenv').config();
-const  OpenAI =  require('openai');
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -22,11 +22,21 @@ async function getChatbotResponse(userInput) {
     console.error("Error calling OpenAI:", error);
 
     if(error.response) {
-      //The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error("Status Code:", error.response.status);
-      console.error("Data:", error.response.data);
-      return`Sorry, there was an error communicating with the server(Status: ${error.response.status}). Please try again later.`;
+      const status = error.response.status;
+
+      switch (status) {
+        case 401: 
+          return "Invalid API key. Please check your API key and try again.";
+        case 429: 
+          return "Rate limit exceeded. Please wait and try again.";
+        case 500:
+        case 502:
+        case 503: 
+        case 504:
+          return "OpenAI servers are currently down. Please try again later";
+        default:
+          return `Sorry, there was an error communicating with the server (Status: ${status}. Please try again.`
+      }
     } else if (error.request) {
       console.log("No response received:", error.request);
       // The request was made but no response was received
@@ -68,9 +78,9 @@ async function getChatbotResponseWithRetry(userInput, retries = 3) {
 async function main() {
 try {
   const userMessage = "What are your hours of operation?";
-  const ChatbotResponse = await getChatbotResponse(userMessage);
+  const ChatbotResponse = await getChatbotResponseWithRetry(userMessage);
   console.log("User:", userMessage);
-  console.log("Chatbot:", chatbotResponse);
+  console.log("Chatbot:", ChatbotResponse);
 } catch (error) {
   console.error("Final error:", error);
   // Handle the error appropriately, e.g., display a generic error message to the user
