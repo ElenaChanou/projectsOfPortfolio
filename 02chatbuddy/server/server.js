@@ -1,29 +1,24 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const chatRoutes = require('./routes/chat'); 
+import express, { json } from 'express';
+import { connect } from 'mongoose';
+import { config } from 'dotenv';
+import chatRoutes from './routes/chat.js';  // Πρέπει να συμπεριλάβεις την επέκταση .js
 
-dotenv.config(); 
+config(); 
 
 const app = express();
 const port = 3000;
 
+app.use(json());
 
-app.use(express.json());
-
-
-mongoose.connect(process.env.MONGO_URI)
+connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ Could not connect to MongoDB', err));
 
-
-app.use('/chat', chatRoutes);
-
+app.use('/chat', chatRoutes);  // Εδώ χρησιμοποιείς το chatRoutes
 
 app.get('/hello', (req, res) => {
   res.send('Hello, I am ChatAi!');
 });
-
 
 app.listen(port, () => {
   console.log(`The server is listening on port ${port}`);
